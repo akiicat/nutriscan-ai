@@ -1,0 +1,7 @@
+{
+  "name": "NutriScan AI",
+  "description": "An intelligent food scanner that uses AI to analyze ingredients from a photo, providing instant health insights and a personal food journal. Empowering you to make informed and healthy eating choices.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
