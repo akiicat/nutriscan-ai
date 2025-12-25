@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { View, Language, TranslationDictionary, User } from '../types';
-import { ScanIcon, HistoryIcon, GoogleIcon } from './Icons';
+import { ScanIcon, HistoryIcon, GoogleIcon, StarIcon } from './Icons';
 import { LANGUAGES } from '../constants';
 
 interface HeaderProps {
@@ -68,6 +68,13 @@ const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, language, setL
                     <HistoryIcon className="h-5 w-5" />
                     <span>{t.historyTab}</span>
                 </button>
+                <button
+                    onClick={() => onNavigate('pricing')}
+                    className={`flex-1 md:flex-none justify-center ${navItemClasses} ${currentView === 'pricing' ? activeClasses : inactiveClasses}`}
+                >
+                    <StarIcon className="h-5 w-5" />
+                    <span>{t.pricingTab}</span>
+                </button>
             </nav>
 
             {/* Controls Container */}
@@ -91,7 +98,14 @@ const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, language, setL
                 {user ? (
                     <div className="flex items-center gap-3 pl-2 border-l border-gray-200">
                         <div className="hidden lg:flex flex-col items-end">
-                            <span className="text-xs text-gray-500 font-medium">{t.welcomeUser}</span>
+                            <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
+                                {t.welcomeUser} 
+                                {user.tier !== 'guest' && (
+                                    <span className="bg-yellow-100 text-yellow-800 text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold">
+                                        {user.tier}
+                                    </span>
+                                )}
+                            </span>
                             <span className="text-sm font-semibold text-gray-800">{user.name}</span>
                         </div>
                         <div className="relative group">
@@ -106,7 +120,14 @@ const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, language, setL
                                     <div className="px-4 py-2 border-b border-gray-100 lg:hidden">
                                         <p className="text-sm font-semibold text-gray-800">{user.name}</p>
                                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                        <p className="text-xs text-green-600 font-bold mt-1 uppercase">{user.tier} Plan</p>
                                     </div>
+                                    <button 
+                                        onClick={() => onNavigate('pricing')}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                    >
+                                        {t.pricingTab}
+                                    </button>
                                     <button 
                                         onClick={onLogout}
                                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"

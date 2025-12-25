@@ -185,7 +185,7 @@ export const analyzeFoodText = async (text: string, language: Language = 'en'): 
       
       Translation Rules for ${targetLanguage}:
       1. "productName": Keep the original name if evident. If the target language (${targetLanguage}) is different, append the translation in parentheses.
-      2. "ingredients.name": Keep the original ingredient name. If the target language is different, append the translation in parentheses.
+      2. "ingredients.name": Keep the original ingredient name. If the target language (${targetLanguage}) is different, append the translation in parentheses.
       3. "summary" and "ingredients.reason": Translate these FULLY into ${targetLanguage}.
 
       Do not include markdown or any text outside the JSON object.
@@ -235,7 +235,7 @@ export const translateAnalysis = async (analysis: FoodAnalysis, language: Langua
 
     Rules:
     1. "productName": Keep the original name if evident. If the target language (${targetLanguage}) is different, ensure there is a translation in parentheses.
-    2. "ingredients[].name": Keep the original name if evident. If the target language is different, ensure there is a translation in parentheses.
+    2. "ingredients[].name": Keep the original name if evident. If the target language (${targetLanguage}) is different, ensure there is a translation in parentheses.
     3. "summary": Translate this fully and naturally into ${targetLanguage}.
     4. "ingredients[].reason": Translate this fully and naturally into ${targetLanguage}.
     5. "price": Keep exactly as is.

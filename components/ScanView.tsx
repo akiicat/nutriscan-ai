@@ -1,14 +1,16 @@
 
 import React, { useState } from 'react';
 import { analyzeFoodImage, analyzeFoodText } from '../services/geminiService';
-import { FoodItem, FoodAnalysis, Language, TranslationDictionary } from '../types';
+import { FoodItem, FoodAnalysis, Language, TranslationDictionary, UserTier } from '../types';
 import { UploadIcon, ExclamationCircleIcon } from './Icons';
 import Spinner from './Spinner';
 
 interface ScanViewProps {
-  onAnalysisComplete: (item: FoodItem) => void;
+  onAnalysisComplete: (item: FoodItem, file?: File) => void;
   language: Language;
   t: TranslationDictionary;
+  userTier: UserTier;
+  onNavigateToLogin: () => void;
 }
 
 const fileToBase64 = (file: File): Promise<string> => {
@@ -27,12 +29,16 @@ const fileToBase64 = (file: File): Promise<string> => {
 // Placeholder SVG for text-based scans
 const TEXT_SCAN_PLACEHOLDER = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNjAwIDQwMCI+CiAgPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2YwZmRmNCIgLz4KICA8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiMzNzQxNTEiPlRleHQgU2NhbiBSZXN1bHQ8L3RleHQ+Cjwvc3ZnPg==`;
 
-const ScanView: React.FC<ScanViewProps> = ({ onAnalysisComplete, language, t }) => {
+const ScanView: React.FC<ScanViewProps> = ({ onAnalysisComplete, language, t, userTier, onNavigateToLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [textInput, setTextInput] = useState("");
 
+  const isGuest = userTier === 'guest';
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (isGuest) return; // Double check protection
+
     const file = event.target.files?.[0];
     if (file) {
       setError(null);
@@ -79,7 +85,7 @@ const ScanView: React.FC<ScanViewProps> = ({ onAnalysisComplete, language, t }) 
             location: "Your Location", // Placeholder
             scanDate: new Date().toISOString(),
         };
-        onAnalysisComplete(newFoodItem);
+        onAnalysisComplete(newFoodItem, file);
     } catch (err) {
         if (err instanceof Error) {
             setError(err.message);
@@ -102,21 +108,39 @@ const ScanView: React.FC<ScanViewProps> = ({ onAnalysisComplete, language, t }) 
             <Spinner message={t.analyzing} />
         ) : (
             <>
-                {/* Image Upload Section */}
-                <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition-colors duration-300 cursor-pointer mb-6">
-                    <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    id="file-upload"
-                    />
-                    <label htmlFor="file-upload" className="flex flex-col items-center justify-center space-y-3 cursor-pointer">
-                        <UploadIcon className="h-12 w-12 text-gray-400" />
-                        <span className="font-semibold text-green-600">{t.uploadClick}</span>
-                        <span className="text-gray-500 text-sm">{t.uploadDrag}</span>
-                    </label>
-                </div>
+                {/* Image Upload Section - Restricted for Guests */}
+                {isGuest ? (
+                   <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center mb-6 opacity-75">
+                      <div className="flex flex-col items-center justify-center space-y-3">
+                         <div className="p-3 bg-gray-200 rounded-full">
+                            <UploadIcon className="h-8 w-8 text-gray-400" />
+                         </div>
+                         <h3 className="font-semibold text-gray-700">{t.guestRestrictionTitle}</h3>
+                         <p className="text-sm text-gray-500 max-w-xs mx-auto">{t.guestRestrictionDesc}</p>
+                         <button 
+                            onClick={onNavigateToLogin}
+                            className="mt-2 text-sm font-medium text-green-600 hover:text-green-700 hover:underline"
+                         >
+                            {t.loginToScan}
+                         </button>
+                      </div>
+                   </div>
+                ) : (
+                    <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition-colors duration-300 cursor-pointer mb-6">
+                        <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        id="file-upload"
+                        />
+                        <label htmlFor="file-upload" className="flex flex-col items-center justify-center space-y-3 cursor-pointer">
+                            <UploadIcon className="h-12 w-12 text-gray-400" />
+                            <span className="font-semibold text-green-600">{t.uploadClick}</span>
+                            <span className="text-gray-500 text-sm">{t.uploadDrag}</span>
+                        </label>
+                    </div>
+                )}
 
                 <div className="flex items-center gap-4 mb-6">
                     <div className="flex-grow h-px bg-gray-200"></div>

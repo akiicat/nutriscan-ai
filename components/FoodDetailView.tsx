@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { FoodItem, HealthRating, Ingredient, TranslationDictionary } from '../types';
-import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon } from './Icons';
+import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon, TrashIcon, ShareIcon, RefreshIcon } from './Icons';
+import ShareModal from './ShareModal';
 
 const ratingStyles: { [key in HealthRating]: { icon: React.ReactNode; bg: string; text: string; ring: string } } = {
   GOOD: { icon: <CheckCircleIcon className="h-5 w-5" />, bg: 'bg-green-100', text: 'text-green-800', ring: 'ring-green-200' },
@@ -23,12 +24,21 @@ const IngredientRow: React.FC<{ ingredient: Ingredient }> = ({ ingredient }) => 
   );
 };
 
-const FoodDetailView: React.FC<{ item: FoodItem; t: TranslationDictionary }> = ({ item, t }) => {
+interface FoodDetailViewProps {
+  item: FoodItem; 
+  onDelete: (itemId: string) => void; 
+  onRescan: (item: FoodItem) => void;
+  isRescanning: boolean;
+  t: TranslationDictionary;
+}
+
+const FoodDetailView: React.FC<FoodDetailViewProps> = ({ item, onDelete, onRescan, isRescanning, t }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   return (
     <>
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 relative">
         <div className="md:flex">
           <div 
             className="md:flex-shrink-0 cursor-pointer relative group"
@@ -45,11 +55,39 @@ const FoodDetailView: React.FC<{ item: FoodItem; t: TranslationDictionary }> = (
                 </svg>
              </div>
           </div>
-          <div className="p-8 flex flex-col justify-center flex-grow">
+          <div className="p-8 flex flex-col justify-center flex-grow relative">
+            {/* Action Buttons in Top Right */}
+            <div className="absolute top-4 right-4 md:top-8 md:right-8 flex items-center gap-2">
+              <button 
+                  onClick={() => onRescan(item)}
+                  disabled={isRescanning}
+                  className="flex items-center gap-2 text-green-600 hover:text-green-700 hover:bg-green-50 px-3 py-1.5 rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                  <RefreshIcon className={`h-4 w-4 ${isRescanning ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">{isRescanning ? t.analyzing : t.rescanButton}</span>
+              </button>
+              <button 
+                  onClick={() => setIsShareModalOpen(true)}
+                  disabled={isRescanning}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors text-sm font-medium"
+              >
+                  <ShareIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t.shareButton}</span>
+              </button>
+              <button 
+                  onClick={() => onDelete(item.id)}
+                  disabled={isRescanning}
+                  className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors text-sm font-medium"
+              >
+                  <TrashIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t.deleteButton}</span>
+              </button>
+            </div>
+
             <div className="uppercase tracking-wide text-sm text-green-600 font-semibold">
               {new Date(item.scanDate).toLocaleDateString()}
             </div>
-            <h1 className="block mt-1 text-3xl leading-tight font-bold text-black">{item.analysis.productName}</h1>
+            <h1 className="block mt-1 text-3xl leading-tight font-bold text-black pr-32">{item.analysis.productName}</h1>
             <div className="mt-2 flex items-center gap-4 text-gray-500">
               <span>{t.detailPrice}: <span className="font-semibold text-gray-700">{item.analysis.price}</span></span>
             </div>
@@ -93,6 +131,14 @@ const FoodDetailView: React.FC<{ item: FoodItem; t: TranslationDictionary }> = (
             </div>
         </div>
       )}
+
+      {/* Share Modal */}
+      <ShareModal 
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        item={item}
+        t={t}
+      />
     </>
   );
 };
